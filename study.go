@@ -1,5 +1,9 @@
 package forlabs
 
+import (
+	"encoding/json"
+)
+
 type Day struct {
 	Name string `json:"name"`
 	Active bool `json:"active"`
@@ -28,8 +32,17 @@ type Grid struct {
 }
 
 // /lm-vendor/repositories/sched/get_grid
-func (c *Client) GetGrid() {
-
+func (c *Client) GetGrid() (g *Grid, err error) {
+	resp, err := c.Post(Endpoint+"/lm-vendor/repositories/sched/get_grid", struct{}{})
+	if err != nil {
+		return nil, err
+	}
+	wrapper := &struct {
+		Grid *Grid `json:"grid"`
+	}{}
+	err = json.Unmarshal(resp.Body(), wrapper)
+	g = wrapper.Grid
+	return
 }
 
 type ScheduleMeta struct {
@@ -62,8 +75,36 @@ type Schedule struct {
 }
 
 // /lm-vendor/repositories/sched/get_schedule
-func (c *Client) GetSchedule() {
+func (c *Client) GetSchedule(stream uint) (s *Schedule, err error) {
+	resp, err := c.Post(Endpoint+"/lm-vendor/repositories/sched/get_schedule", struct{
+		StreamID uint `json:"stream_id"`
+	}{stream})
+	if err != nil {
+		return nil, err
+	}
+	s = &Schedule{}
+	err = json.Unmarshal(resp.Body(), s)
+	return
+}
 
+type Study struct {
+	ID uint `json:"id"`
+	VerboseName string `json:"verbose_name"`
+}
+
+func (c *Client) GetStudies(stream uint) (st []Study, err error) {
+	resp, err := c.Post(Endpoint+"/lm-vendor/repositories/learning/get_studies", struct{
+		StreamID uint `json:"stream_id"`
+	}{stream})
+	if err != nil {
+		return nil, err
+	}
+	wrap := &struct {
+		Studies []Study `json:"studies"`
+	}{}
+	err = json.Unmarshal(resp.Body(), wrap)
+	st = wrap.Studies
+	return
 }
 
 // encapsulated into posts

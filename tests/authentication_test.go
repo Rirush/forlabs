@@ -6,10 +6,6 @@ import (
 	"time"
 )
 
-// replace with yours
-const ValidUsername = "login"
-const ValidPassword = "password"
-
 func TestAuthentication(t *testing.T) {
 	_, err := forlabs.Authenticate(ValidUsername, ValidPassword)
 	if err != nil {
